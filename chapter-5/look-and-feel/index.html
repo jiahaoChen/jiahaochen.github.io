@@ -1,37 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Progressive Times - Online News</title>
-  <link href="https://fonts.googleapis.com/css?family=Raleway|Merriweather" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="./css/site.css">
-  <!-- Adress bar styling -->
-  <meta name="theme-color" content="#FFD700">
-  <meta name="msapplication-navbutton-color" content="#FFD700">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="./manifest.json">
-</head>
-<body>
-  <!-- header -->
-  <div id="header">
-    <img id="logo" src="./images/newspaper.svg" />
-    <h1>Progressive Times</h1>
-    <h6>Latest News</h6>
-  </div>
-  <!-- latest news -->
-  <div id="latest"></div>
-  <hr>
-  <!-- javaScript -->
-  <script async src="./js/main.js"></script>
+  <head>
+    <meta charset="UTF-8">
+    <title>Progressive Times</title>
+  </head>
+  <body>
+    <button id="btnSave" disabled>Click this to show the prompt</button>                       
+  </body>
   <script>
-  // Register the service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(function(registration) {
-      // Registration was successful
+    window.addEventListener('load', function () {
+      var btnSave = document.getElementById('btnSave');
+      var savedPrompt;
+      if ('serviceWorker' in navigator) {                                                      
+        navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
+          // 注册成功
+          console.log('ServiceWorker registration successful with scope: ',
+            registration.scope);
+        }).catch(function (err) {
+          // 注册失败 :(
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      }
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();                                                                    
+        btnSave.removeAttribute('disabled');                                                   
+        savedPrompt = e;                                                                       
+        return false;
+      });
+      btnSave.addEventListener('click', function () {                                          
+        if (savedPrompt !== undefined) {                                                       
+          savedPrompt.prompt();                                                                
+          savedPrompt.userChoice.then(function (result) {                                      
+            if (result.outcome == 'dismissed') {
+              console.log('User dismissed homescreen install');
+            } else {
+              console.log('User added to homescreen');
+            }
+            savedPrompt = null;                                                                ❾
+          });
+        }
+      });
     });
-  }
   </script>
-</body>
 </html>
